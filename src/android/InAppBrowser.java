@@ -938,11 +938,22 @@ public class InAppBrowser extends CordovaPlugin {
                             mUploadCallbackLollipop.onReceiveValue(null);
                         }
                         mUploadCallbackLollipop = filePathCallback;
+                        boolean selectMultiple = false;
 
                         // Create File Chooser Intent
                         Intent content = new Intent(Intent.ACTION_GET_CONTENT);
                         content.addCategory(Intent.CATEGORY_OPENABLE);
                         content.setType("*/*");
+
+                        String acceptTypes = "";
+                        acceptTypes = String.join(", ",fileChooserParams.getAcceptTypes());
+
+                        if (fileChooserParams.getMode() == WebChromeClient.FileChooserParams.MODE_OPEN_MULTIPLE) {
+                            selectMultiple = true;
+                        }
+
+                        content.setType(acceptTypes);
+                        content.putExtra(Intent.EXTRA_ALLOW_MULTIPLE, selectMultiple);
 
                         // Run cordova startActivityForResult
                         cordova.startActivityForResult(InAppBrowser.this, Intent.createChooser(content, "Select File"), FILECHOOSER_REQUESTCODE_LOLLIPOP);
