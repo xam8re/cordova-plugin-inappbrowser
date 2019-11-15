@@ -20,6 +20,7 @@ package org.apache.cordova.inappbrowser;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
@@ -1132,7 +1133,25 @@ public class InAppBrowser extends CordovaPlugin {
                 super.onActivityResult(requestCode, resultCode, intent);
                 return;
             }
-            mUploadCallbackLollipop.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, intent));
+            Uri[] result = null;
+            if (resultCode ==  Activity.RESULT_OK && intent != null) {
+                if (intent.getClipData() != null) {
+                    // handle multiple-selected files
+                    final int numSelectedFiles = intent.getClipData().getItemCount();
+                    result = new Uri[numSelectedFiles];
+                    for (int i = 0; i < numSelectedFiles; i++) {
+                        result[i] = intent.getClipData().getItemAt(i).getUri();
+                        LOG.d(LOG_TAG, "Receive file chooser URL: " + result[i]);
+                    }
+                }
+                else if (intent.getData() != null) {
+                    // handle single-selected file
+                    result = WebChromeClient.FileChooserParams.parseResult(resultCode, intent);
+                    LOG.d(LOG_TAG, "Receive file chooser URL: " + result);
+                }
+            }
+            mUploadCallbackLollipop.onReceiveValue(result);
+            // mUploadCallbackLollipop.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, intent));
             mUploadCallbackLollipop = null;
         }
         // For Android < 5.0
